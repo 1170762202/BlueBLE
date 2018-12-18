@@ -734,6 +734,7 @@ public class MainActivity extends AppCompatActivity {
         }
         检验码 = 检验码 / 100;
         tv32.setText("检验码:" + 检验码);
+        tv32.setText("检验码:" + 检验码);
     }
 
     private void replacePointZero(TextView textView) {
