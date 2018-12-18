@@ -580,11 +580,10 @@ public class MainActivity extends AppCompatActivity {
         }
         tv3.setText("SOC: " + SOC + "%");
         tv4.setText("电池状态:" + 电池状态_status);
-        String s2 = BytesHexStrTranslate.hexStringToBinary(split[9]);
-        String[] split1 = s2.split("");
+        byte[] bytes3 = BytesHexStrTranslate.toBytes(split[9]);
         tv5.setVisibility(View.GONE);
-        tv5.setText("第1节:" + getDCStatus(split[0]) + "  第2节:" + getDCStatus(split[1]) + "  第3节:" +
-                getDCStatus(split[2]) + "  第4节:" + getDCStatus(split[3]) + "  第5节:" + getDCStatus(split[4]) + "  第6节:" + getDCStatus(split[5]));
+//        tv5.setText("第1节:" + getDCStatus(split[0]) + "  第2节:" + getDCStatus(split[1]) + "  第3节:" +
+//                getDCStatus(split[2]) + "  第4节:" + getDCStatus(split[3]) + "  第5节:" + getDCStatus(split[4]) + "  第6节:" + getDCStatus(split[5]));
 //        double 均衡状态 = calcOneByte(s1, 1, 0, 1);
 //        tv5.setText("均衡状态:" + (均衡状态 == 0 ? "未开启均衡" : "开启均衡"));
         replacePointZero(tv5);
@@ -605,22 +604,22 @@ public class MainActivity extends AppCompatActivity {
 
         double 第1节电池电压 = calcTwoByte(split[18], split[19], 1, 0, 1);
         double 第2节电池电压 = calcTwoByte(split[20], split[21], 1, 0, 1);
-        tv9.setText("第1节电池电压:" + 第1节电池电压 + "mV" + "\n第1节均衡状态:" + getDCStatus(split[0]));
-        tv10.setText("第2节电池电压:" + 第2节电池电压 + "mV" + "\n第2节均衡状态:" + getDCStatus(split[1]));
+        tv9.setText("第1节电池电压:" + 第1节电池电压 + "mV" + "\n第1节均衡状态:" + getDCStatus(bytes3[0] & 0x01));
+        tv10.setText("第2节电池电压:" + 第2节电池电压 + "mV" + "\n第2节均衡状态:" + getDCStatus(bytes3[0] >> 1 & 0x01));
         replacePointZero(tv9);
         replacePointZero(tv10);
 
         double 第3节电池电压 = calcTwoByte(split[22], split[23], 1, 0, 1);
         double 第4节电池电压 = calcTwoByte(split[24], split[25], 1, 0, 1);
-        tv11.setText("第3节电池电压:" + 第3节电池电压 + "mV" + "\n第3节均衡状态:" + getDCStatus(split[2]));
-        tv12.setText("第4节电池电压:" + 第4节电池电压 + "mV\n第4节均衡状态:" + getDCStatus(split[3]));
+        tv11.setText("第3节电池电压:" + 第3节电池电压 + "mV" + "\n第3节均衡状态:" + getDCStatus(bytes3[0] >> 2 & 0x01));
+        tv12.setText("第4节电池电压:" + 第4节电池电压 + "mV\n第4节均衡状态:" + getDCStatus(bytes3[0] >> 3 & 0x01));
         replacePointZero(tv11);
         replacePointZero(tv12);
 
         double 第5节电池电压 = calcTwoByte(split[26], split[27], 1, 0, 1);
         double 第6节电池电压 = calcTwoByte(split[28], split[29], 1, 0, 1);
-        tv13.setText("第5节电池电压:" + 第5节电池电压 + "mV\n第5节均衡状态:" + getDCStatus(split[4]));
-        tv14.setText("第6节电池电压:" + 第6节电池电压 + "mV\n第6节均衡状态:" + getDCStatus(split[5]));
+        tv13.setText("第5节电池电压:" + 第5节电池电压 + "mV\n第5节均衡状态:" + getDCStatus(bytes3[0] >> 4 & 0x01));
+        tv14.setText("第6节电池电压:" + 第6节电池电压 + "mV\n第6节均衡状态:" + getDCStatus(bytes3[0] >> 5 & 0x01));
         replacePointZero(tv13);
         replacePointZero(tv14);
 
@@ -742,8 +741,8 @@ public class MainActivity extends AppCompatActivity {
         textView.setText(s.replace(".0", ""));
     }
 
-    private String getDCStatus(String value) {
-        return value.equals("1") ? "开启均衡" : "未开启";
+    private String getDCStatus(int value) {
+        return value != 0 ? "开启均衡" : "未开启";
     }
 
     private void doReceiptMsg(String rxValue) throws Exception {
@@ -791,18 +790,6 @@ public class MainActivity extends AppCompatActivity {
 
             messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
 
-        }
-    }
-
-    private String getStatus(double a) {
-        if (a == 1) {
-            return "1级故障";
-        } else if (a == 10) {
-            return "2级故障";
-        } else if (a == 11) {
-            return "3级故障";
-        } else {
-            return "无故障";
         }
     }
 
