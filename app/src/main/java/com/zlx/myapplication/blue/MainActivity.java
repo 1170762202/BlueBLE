@@ -41,7 +41,9 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private Handler handler = new Handler();// 创建一个handler对象
@@ -108,6 +110,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView tv30;
     private TextView tv31;
     private TextView tv32;
+    private boolean flag;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -380,6 +384,7 @@ public class MainActivity extends AppCompatActivity {
                     mDevice = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(deviceAddress);
                     System.out.println("远程蓝牙Address：" + mDevice);
                     System.out.println("mserviceValue:" + mService);
+                    deviceName = mDevice.getName();
                     boolean isconnected = mService.connect(deviceAddress);
                     System.out.println("已连接吗？" + isconnected);
                 }
@@ -440,6 +445,7 @@ public class MainActivity extends AppCompatActivity {
         return intentFilter;
     }
 
+    private String deviceName;
     private final BroadcastReceiver UARTStatusChangeReceiver = new BroadcastReceiver() {
 
         public void onReceive(Context context, Intent intent) {
@@ -448,7 +454,7 @@ public class MainActivity extends AppCompatActivity {
             // 建立连接
             if (action.equals(UartService.ACTION_GATT_CONNECTED)) {
                 System.out.println("BroadcastReceiver:ACTION_GATT_CONNECTED");
-                textview_iscConnected.setText("已建立连接");
+                textview_iscConnected.setText(deviceName + ":已建立连接");
                 String currentDateTimeString = DateFormat.getTimeInstance().format(new Date());
 
                 btnScan.setText("断开");
@@ -520,118 +526,268 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private List<String> list = new ArrayList<>();
 
+    private boolean flag2 = false;
+
+    private void doReceiptMessage(String value) throws Exception {
+        String[] split = value.split(" ");//每个字节的数组
+        for (String s : split) {
+            list.add(s);
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (String s : list) {
+            sb.append(s);
+        }
+
+        byte[] data = BytesHexStrTranslate.toBytes(sb.toString());
+        for (int i = 0; i < data.length; i++) {
+            if (data[i] == 85 && data[i + 1] == -86) {
+                if (list.size() - i >= 59) {
+                    int crc = crc(data, i, 57);
+                    if (data[i + 57] == (byte) crc && (data[i + 58] == (byte) (crc >> 8))) {
+
+                        StringBuilder sb1 = new StringBuilder();
+                        for (String s : list) {
+                            sb1.append(s + " ");
+                        }
+                        set(sb1.toString().split(" "));
+                    } else {
+                        list.clear();
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void set(String[] split) {
+        double volt = calcTwoByte(split[2], split[3], 0.1, 0, 1);
+        double dianliu = calcTwoByte(split[4], split[5], 0.1, -3000, 1);
+        tv1.setText("总电压: " + volt + "V");
+        tv2.setText("总电流: " + (dianliu > 0 ? "放电 " : "充电 ") + dianliu + "A");
+        double SOC = calcTwoByte(split[6], split[7], 0.1, 0, 1);
+        double 电池状态 = calcOneByte(split[8], 1, 0, 1);
+        String 电池状态_status = null;
+        if (电池状态 == 0) {
+            电池状态_status = "静止";
+        } else if (电池状态 == 1) {
+            电池状态_status = "充电";
+        } else {
+            电池状态_status = "放电";
+        }
+        tv3.setText("SOC: " + SOC + "%");
+        tv4.setText("电池状态:" + 电池状态_status);
+        String s2 = BytesHexStrTranslate.hexStringToBinary(split[9]);
+        String[] split1 = s2.split("");
+        tv5.setVisibility(View.GONE);
+        tv5.setText("第1节:" + getDCStatus(split[0]) + "  第2节:" + getDCStatus(split[1]) + "  第3节:" +
+                getDCStatus(split[2]) + "  第4节:" + getDCStatus(split[3]) + "  第5节:" + getDCStatus(split[4]) + "  第6节:" + getDCStatus(split[5]));
+//        double 均衡状态 = calcOneByte(s1, 1, 0, 1);
+//        tv5.setText("均衡状态:" + (均衡状态 == 0 ? "未开启均衡" : "开启均衡"));
+        replacePointZero(tv5);
+
+        double 年 = calcOneByte(split[10], 1, 0, 0);
+        double 月 = calcOneByte(split[11], 1, 0, 0);
+        double 日 = calcOneByte(split[12], 1, 0, 0);
+        double 时 = calcOneByte(split[13], 1, 0, 0);
+        double 分 = calcOneByte(split[14], 1, 0, 0);
+        double 秒 = calcOneByte(split[15], 1, 0, 0);
+        tv6.setText((split[10] + "-" + split[11] + "-" + split[12] + " " + split[13] + ":" + split[14] + ":" + split[15]));
+        double 电压节数 = calcOneByte(split[16], 1, 0, 1);
+        double 温度个数 = calcOneByte(split[17], 1, 0, 1);
+        tv7.setText("电压节数:" + 电压节数);
+        tv8.setText("温度个数:" + 温度个数);
+        replacePointZero(tv7);
+        replacePointZero(tv8);
+
+        double 第1节电池电压 = calcTwoByte(split[18], split[19], 1, 0, 1);
+        double 第2节电池电压 = calcTwoByte(split[20], split[21], 1, 0, 1);
+        tv9.setText("第1节电池电压:" + 第1节电池电压 + "mV" + "\n第1节均衡状态:" + getDCStatus(split[0]));
+        tv10.setText("第2节电池电压:" + 第2节电池电压 + "mV" + "\n第2节均衡状态:" + getDCStatus(split[1]));
+        replacePointZero(tv9);
+        replacePointZero(tv10);
+
+        double 第3节电池电压 = calcTwoByte(split[22], split[23], 1, 0, 1);
+        double 第4节电池电压 = calcTwoByte(split[24], split[25], 1, 0, 1);
+        tv11.setText("第3节电池电压:" + 第3节电池电压 + "mV" + "\n第3节均衡状态:" + getDCStatus(split[2]));
+        tv12.setText("第4节电池电压:" + 第4节电池电压 + "mV\n第4节均衡状态:" + getDCStatus(split[3]));
+        replacePointZero(tv11);
+        replacePointZero(tv12);
+
+        double 第5节电池电压 = calcTwoByte(split[26], split[27], 1, 0, 1);
+        double 第6节电池电压 = calcTwoByte(split[28], split[29], 1, 0, 1);
+        tv13.setText("第5节电池电压:" + 第5节电池电压 + "mV\n第5节均衡状态:" + getDCStatus(split[4]));
+        tv14.setText("第6节电池电压:" + 第6节电池电压 + "mV\n第6节均衡状态:" + getDCStatus(split[5]));
+        replacePointZero(tv13);
+        replacePointZero(tv14);
+
+        double 电池温度 = calcOneByte(split[30], 1, -40, 1);
+        double 单体电池压差 = calcTwoByte(split[31], split[32], 1, 0, 1);
+        tv15.setText("电池温度:" + 电池温度 + "");
+        tv16.setText("单体电池压差:" + 单体电池压差 + "mV");
+        replacePointZero(tv15);
+        replacePointZero(tv16);
+
+        double 电池温差 = calcOneByte(split[33], 1, 0, 1);
+        double 最高单体电压 = calcTwoByte(split[34], split[35], 1, 0, 1);
+        tv17.setText("电池温差:" + 电池温差 + "℃");
+        tv18.setText("最高单体电压:" + 最高单体电压 + "mV");
+        replacePointZero(tv17);
+        replacePointZero(tv18);
+
+        double 最低单体电压 = calcTwoByte(split[36], split[37], 1, 0, 1);
+        double 最高单体电压位置 = calcOneByte(split[38], 1, 0, 1);
+        tv19.setText("最低单体电压:" + 最低单体电压 + "mV");
+        tv20.setText("最高单体电压位置:" + 最高单体电压位置);
+        replacePointZero(tv19);
+        replacePointZero(tv20);
+
+        double 最低单体电压位置 = calcOneByte(split[39], 1, 0, 1);
+        double 最高温度 = calcOneByte(split[40], 1, -40, 1);
+        tv21.setText("最低单体电压位置:" + 最低单体电压位置);
+        tv22.setText("最高温度:" + 最高温度 + "℃");
+        replacePointZero(tv21);
+        replacePointZero(tv22);
+
+        double 最低温度 = calcOneByte(split[41], 1, -40, 1);
+        double 最高温度位置 = calcOneByte(split[42], 1, 0, 1);
+        tv23.setText("最低温度:" + 最低温度 + "℃");
+        tv24.setText("最高温度位置:" + 最高温度位置);
+        replacePointZero(tv23);
+        replacePointZero(tv24);
+
+        double 最低温度位置 = calcOneByte(split[43], 1, 0, 1);
+        double 过充次数 = calcTwoByte(split[44], split[45], 1, 0, 1);
+        tv25.setText("最低温度位置:" + 最低温度位置);
+        replacePointZero(tv25);
+        tv26.setText("过充次数:" + 过充次数);
+        replacePointZero(tv26);
+
+        double 过放次数 = calcTwoByte(split[46], split[47], 1, 0, 1);
+        double 充电过流次数 = calcTwoByte(split[48], split[49], 1, 0, 1);
+        tv27.setText("过放次数:" + 过放次数);
+        tv28.setText("充电过流次数:" + 充电过流次数);
+        replacePointZero(tv27);
+        replacePointZero(tv28);
+
+        double 过温次数 = calcTwoByte(split[50], split[51], 1, 0, 1);
+        double 循环次数 = calcTwoByte(split[52], split[53], 1, 0, 1);
+        tv29.setText("过温次数:" + 过温次数);
+        tv30.setText("循环次数:" + 循环次数);
+        replacePointZero(tv29);
+        replacePointZero(tv30);
+
+
+        double 电池故障1 = calcOneByte(split[54], 1, 0, 1);
+        double 电池故障2 = calcOneByte(split[55], 1, 0, 1);
+        double 电池故障3 = calcOneByte(split[56], 1, 0, 1);
+        byte[] bytes = BytesHexStrTranslate.toBytes(split[54]);
+        tv31.setText("label: 电池故障:");
+        if ((bytes[0] & 0x03) != 0) {
+            tv31.setText("总压过高" + (bytes[0] & 0x03) + "级 ");
+        } else if ((bytes[0] >> 2 & 0x03) != 0) {
+            tv31.setText("总压过低" + (bytes[0] >> 2 & 0x03) + "级 ");
+        } else if ((bytes[0] >> 4 & 0x03) != 0) {
+            tv31.setText("单体过高" + (bytes[0] >> 4 & 0x03) + "级 ");
+        } else if ((bytes[0] >> 6 & 0x03) != 0) {
+            tv31.setText("单体过低" + (bytes[0] >> 6 & 0x03) + "级 ");
+        } else {
+//            tv31.setText("无故障");
+        }
+
+//        tv31.append(" 电池故障2:");
+        byte[] bytes1 = BytesHexStrTranslate.toBytes(split[55]);
+        if ((bytes1[0] & 0x03) != 0) {
+            tv31.append("压差过大" + (bytes1[0] & 0x03) + "级 ");
+        } else if ((bytes1[0] >> 2 & 0x03) != 0) {
+            tv31.append("温差过大" + (bytes1[0] >> 2 & 0x03) + "级 ");
+        } else if ((bytes1[0] >> 4 & 0x03) != 0) {
+            tv31.append("温度过高" + (bytes1[0] >> 4 & 0x03) + "级 ");
+        } else if ((bytes1[0] >> 6 & 0x03) != 0) {
+            tv31.append("温度过低" + (bytes1[0] >> 6 & 0x03) + "级 ");
+        } else {
+//            tv31.append("无故障");
+        }
+//        tv31.append(" 电池故障3:");
+        byte[] bytes2 = BytesHexStrTranslate.toBytes(split[56]);
+        if ((bytes2[0] & 0x03) != 0) {
+            tv31.append("充电过流" + (bytes2[0] & 0x03) + "级 ");
+        } else if ((bytes2[0] >> 2 & 0x03) != 0) {
+            tv31.append("放电过流" + (bytes2[0] >> 2 & 0x03) + "级 ");
+        } else if ((bytes2[0] >> 4 & 0x03) != 0) {
+            tv31.append("SOC过高" + (bytes2[0] >> 4 & 0x03) + "级 ");
+        } else if ((bytes2[0] >> 6 & 0x03) != 0) {
+            tv31.append("SOC过低" + (bytes2[0] >> 6 & 0x03) + "级 ");
+        } else {
+//            tv31.append("无故障");
+        }
+
+
+//        tv31.setText("电池故障1:" + 电池故障1 + getStatus(电池故障1) + "     电池故障2:" +
+//                电池故障2 + getStatus(电池故障2) + "     电池故障3:" + 电池故障3 + getStatus(电池故障3));
+
+        double 检验码 = 0;
+        for (String s : split) {
+            检验码 += Integer.parseInt(s, 16);
+        }
+        检验码 = 检验码 / 100;
+        tv32.setText("检验码:" + 检验码);
+    }
+
+    private void replacePointZero(TextView textView) {
+        String s = textView.getText().toString();
+        textView.setText(s.replace(".0", ""));
+    }
+
+    private String getDCStatus(String value) {
+        return value.equals("1") ? "开启均衡" : "未开启";
+    }
 
     private void doReceiptMsg(String rxValue) throws Exception {
 //        String Rx_str = new String(rxValue, "UTF-8");
 //        listAdapter.add("[" + DateFormat.getTimeInstance().format(new Date()) + "] RX: " + Rx_str);
 
-        String[] split = rxValue.split(" ");
+        String[] split1 = rxValue.split(" ");//每个字节的数组
 
-        StringBuilder sb = new StringBuilder();
-        for (String s : split) {
-            sb.append(s + " ");
-        }
-
-//        listAdapter.add("收到的数据：" + sb.toString());
-
-        boolean flag = false;
-        for (int i = 0; i < split.length; i++) {
-            if ((split[i].equals("55")) && (split[i + 1].equals("AA") || split[i + 1].equals("aa"))) {
+        for (int i = 0; i < split1.length; i++) {
+            if ((split1[i].equals("55")) && (split1[i + 1].equals("AA") || split1[i + 1].equals("aa"))) {
                 flag = true;
                 break;
             }
         }
-//        boolean flag1 = (crc(rxValue)) >> 8 == rxValue[58] && (byte) crc(rxValue) == rxValue[59];
         if (flag) {
+            for (String s : split1) {
+                list.add(s);
+            }
+        }
+
+        if (list.size() > 59) {
+            flag = false;
+            list.clear();
+            return;
+        }
+
+
+        if (list.size() == 59) {
+            flag = false;
+
+            for (int i = 0; i < list.size(); i++) {
+                String s = list.get(i);
+            }
+
+
+            StringBuilder builder = new StringBuilder();
+            for (String s : list) {
+                builder.append(s + " ");
+            }
+//        listAdapter.add("收到的数据：" + sb.toString());
+            String[] split = builder.toString().split(" ");
+//        boolean flag1 = (crc(rxValue)) >> 8 == rxValue[58] && (byte) crc(rxValue) == rxValue[59];
             listAdapter.clear();
-            double volt = calcTwoByte(split[2], split[3], 0.1, 0, 1);
-            double dianliu = calcTwoByte(split[4], split[5], 0.1, -3000, 1);
-            tv1.setText("总电压: " + volt + "V");
-            tv2.setText("总电流: " + (dianliu > 0 ? "放电 " : "充电 ") + dianliu + "A");
-            double SOC = calcTwoByte(split[6], split[7], 0.1, 0, 1);
-            double 电池状态 = calcOneByte(split[8], 1, 0, 1);
-            String 电池状态_status = null;
-            if (电池状态 == 0) {
-                电池状态_status = "静止";
-            } else if (电池状态 == 1) {
-                电池状态_status = "充电";
-            } else {
-                电池状态_status = "放电";
-            }
-            tv3.setText("SOC: " + SOC + "%");
-            tv4.setText("电池状态:" + 电池状态_status + 电池状态);
-            double 均衡状态 = calcOneByte(split[9], 1, 0, 1);
-            tv5.setText("均衡状态:" + (均衡状态 == 0 ? "未开启均衡" : "开启均衡"));
-            double 年 = calcOneByte(split[10], 1, 0, 0);
-            double 月 = calcOneByte(split[11], 1, 0, 0);
-            double 日 = calcOneByte(split[12], 1, 0, 0);
-            double 时 = calcOneByte(split[13], 1, 0, 0);
-            double 分 = calcOneByte(split[14], 1, 0, 0);
-            double 秒 = calcOneByte(split[15], 1, 0, 0);
-            tv6.setText("年:" + 年 + "  月:" + 月 + "  日:" + 日 + "  时:" + 时 + "  分:" + 分 + "  秒:" + 秒);
-            double 电压节数 = calcOneByte(split[16], 1, 0, 1);
-            double 温度个数 = calcOneByte(split[17], 1, 0, 1);
-            tv7.setText("电压节数:" + 电压节数);
-            tv8.setText("温度个数:" + 温度个数);
-            double 第1节电池电压 = calcTwoByte(split[18], split[19], 1, 0, 1);
-            double 第2节电池电压 = calcTwoByte(split[20], split[21], 1, 0, 1);
-            tv9.setText("第1节电池电压:" + 第1节电池电压 + "mV");
-            tv10.setText("第2节电池电压:" + 第2节电池电压 + "mV");
-            double 第3节电池电压 = calcTwoByte(split[22], split[23], 1, 0, 1);
-            double 第4节电池电压 = calcTwoByte(split[24], split[25], 1, 0, 1);
-            tv11.setText("第3节电池电压:" + 第3节电池电压+"mV");
-            tv12.setText("第4节电池电压:" + 第4节电池电压 + "mV");
-            double 第5节电池电压 = calcTwoByte(split[26], split[27], 1, 0, 1);
-            double 第6节电池电压 = calcTwoByte(split[28], split[29], 1, 0, 1);
-            tv13.setText("第5节电池电压:" + 第5节电池电压 + "mV ");
-            tv14.setText("第6节电池电压:" + 第6节电池电压 + "mV");
-            double 电池温度 = calcOneByte(split[30], 1, -40, 1);
-            double 单体电池压差 = calcTwoByte(split[31], split[32], 1, 0, 1);
-            tv15.setText("电池温度:" + 电池温度 + "");
-            tv16.setText("单体电池压差:" + 单体电池压差 + "mV");
-            double 电池温差 = calcOneByte(split[33], 1, 0, 1);
-            double 最高单体电压 = calcTwoByte(split[34], split[35], 1, 0, 1);
-            tv17.setText("电池温差:" + 电池温差 + "℃");
-            tv18.setText("最高单体电压:" + 最高单体电压 + "mV");
-            double 最低单体电压 = calcTwoByte(split[36], split[37], 1, 0, 1);
-            double 最高单体电压位置 = calcOneByte(split[38], 1, 0, 1);
-            tv19.setText("最低单体电压:" + 最低单体电压 + "mV");
-            tv20.setText("最高单体电压位置:" + 最高单体电压位置);
-
-            double 最低单体电压位置 = calcOneByte(split[39], 1, 0, 1);
-            double 最高温度 = calcOneByte(split[40], 1, -40, 1);
-            tv21.setText("最低单体电压位置:" + 最低单体电压位置);
-            tv22.setText("最高温度:" + 最高温度 + "℃");
-            double 最低温度 = calcOneByte(split[41], 1, -40, 1);
-            double 最高温度位置 = calcOneByte(split[42], 1, 0, 1);
-            tv23.setText("最低温度:" + 最低温度 + "℃");
-            tv24.setText("最高温度位置:" + 最高温度位置);
-
-            double 最低温度位置 = calcOneByte(split[43], 1, 0, 1);
-            double 过充次数 = calcTwoByte(split[44], split[45], 1, 0, 1);
-            tv25.setText("最低温度位置:" + 最低温度位置);
-            tv26.setText("过充次数:" + 过充次数);
-            double 过放次数 = calcTwoByte(split[46], split[47], 1, 0, 1);
-            double 充电过流次数 = calcTwoByte(split[48], split[49], 1, 0, 1);
-            tv27.setText("过放次数:" + 过放次数);
-            tv28.setText("充电过流次数:" + 充电过流次数);
-            double 过温次数 = calcTwoByte(split[50], split[51], 1, 0, 1);
-            double 循环次数 = calcTwoByte(split[52], split[53], 1, 0, 1);
-            tv29.setText("过温次数:" + 过温次数);
-            tv30.setText("循环次数:" + 循环次数);
-            double 电池故障1 = calcOneByte(split[54], 1, 0, 1);
-            double 电池故障2 = calcOneByte(split[55], 1, 0, 1);
-            double 电池故障3 = calcOneByte(split[56], 1, 0, 1);
-            tv31.setText("电池故障1:" + 电池故障1 + getStatus(电池故障1) + "     电池故障2:" +
-                    电池故障2 + getStatus(电池故障2) + "     电池故障3:" + 电池故障3 + getStatus(电池故障3));
-
-            double 检验码 = 0;
-            for (String s : split) {
-                检验码 += Integer.parseInt(s, 16);
-            }
-            检验码 = 检验码 / 100;
-            tv32.setText("检验码:" + 检验码);
+            set(split);
 
             messageListView.smoothScrollToPosition(listAdapter.getCount() - 1);
 
@@ -650,10 +806,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    int crc(byte[] data) {
+    int crc(byte[] data, int startIndex, int len) {
         int result = 0;
-        for (int i = 0; i < 57; i++) {
-            result += data[i];
+        for (int i = 0; i < len; i++) {
+            result += data[i + startIndex];
         }
 
         return result;

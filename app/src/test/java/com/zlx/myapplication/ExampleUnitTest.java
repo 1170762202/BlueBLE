@@ -1,5 +1,7 @@
 package com.zlx.myapplication;
 
+import com.zlx.myapplication.blue.BytesHexStrTranslate;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -13,12 +15,12 @@ public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() throws Exception {
         assertEquals(4, 2 + 2);
+        byte[] bytes = BytesHexStrTranslate.toBytes("03");
 
-
-        System.out.println(calcTwoByte(Integer.parseInt("30", 16), Integer.parseInt("75", 16), 0.1, -3000));
-
-        int a = -100 << 2;
-        System.out.println(a);
+        System.out.println((bytes[0] & 0x03));
+        for (byte aByte : bytes) {
+            System.out.println(aByte);
+        }
 
     }
 
