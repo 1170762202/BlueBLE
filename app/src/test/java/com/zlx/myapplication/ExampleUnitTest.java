@@ -15,13 +15,24 @@ public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() throws Exception {
         assertEquals(4, 2 + 2);
-        byte[] bytes = BytesHexStrTranslate.toBytes("03");
+        byte[] bytes1 = BytesHexStrTranslate.toBytes("33");
 
-        System.out.println((bytes[0] & 0x03));
-        for (byte aByte : bytes) {
-            System.out.println(aByte);
+        System.out.println(bytes1[0]);
+        System.out.println(bytes1[1]);
+        int i = bytes1[0] * 10 + bytes1[1];
+
+        if ((bytes1[0] & 0x03) != 0) {
+            System.out.println("压差过大" + (i & 0x03) + "级\n");
         }
-
+        if ((bytes1[0] >> 2 & 0x03) != 0) {
+            System.out.println("温差过大" + (i >> 2 & 0x03) + "级\n");
+        }
+        if ((bytes1[0] >> 4 & 0x03) != 0) {
+            System.out.println("温度过高" + (i >> 4 & 0x03) + "级\n");
+        }
+        if ((bytes1[0] >> 6 & 0x03) != 0) {
+            System.out.println("温度过低" + (i >> 6 & 0x03) + "级\n");
+        }
     }
 
     private double calcTwoByte(int low, int high, double ex, int offset) {

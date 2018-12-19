@@ -684,44 +684,47 @@ public class MainActivity extends AppCompatActivity {
         double 电池故障2 = calcOneByte(split[55], 1, 0, 1);
         double 电池故障3 = calcOneByte(split[56], 1, 0, 1);
         byte[] bytes = BytesHexStrTranslate.toBytes(split[54]);
-        tv31.setText("label: 电池故障:");
+        tv31.setText("电池故障:\n");
         if ((bytes[0] & 0x03) != 0) {
-            tv31.setText("总压过高" + (bytes[0] & 0x03) + "级 ");
-        } else if ((bytes[0] >> 2 & 0x03) != 0) {
-            tv31.setText("总压过低" + (bytes[0] >> 2 & 0x03) + "级 ");
-        } else if ((bytes[0] >> 4 & 0x03) != 0) {
-            tv31.setText("单体过高" + (bytes[0] >> 4 & 0x03) + "级 ");
-        } else if ((bytes[0] >> 6 & 0x03) != 0) {
-            tv31.setText("单体过低" + (bytes[0] >> 6 & 0x03) + "级 ");
-        } else {
-//            tv31.setText("无故障");
+            tv31.append("总压过高" + (bytes[0] & 0x03) + "级\n");
+        }
+        if ((bytes[0] >> 2 & 0x03) != 0) {
+            tv31.append("总压过低" + (bytes[0] >> 2 & 0x03) + "级\n");
+        }
+        if ((bytes[0] >> 4 & 0x03) != 0) {
+            tv31.append("单体过高" + (bytes[0] >> 4 & 0x03) + "级\n");
+        }
+        if ((bytes[0] >> 6 & 0x03) != 0) {
+            tv31.append("单体过低" + (bytes[0] >> 6 & 0x03) + "级\n");
         }
 
 //        tv31.append(" 电池故障2:");
         byte[] bytes1 = BytesHexStrTranslate.toBytes(split[55]);
         if ((bytes1[0] & 0x03) != 0) {
-            tv31.append("压差过大" + (bytes1[0] & 0x03) + "级 ");
-        } else if ((bytes1[0] >> 2 & 0x03) != 0) {
-            tv31.append("温差过大" + (bytes1[0] >> 2 & 0x03) + "级 ");
-        } else if ((bytes1[0] >> 4 & 0x03) != 0) {
-            tv31.append("温度过高" + (bytes1[0] >> 4 & 0x03) + "级 ");
-        } else if ((bytes1[0] >> 6 & 0x03) != 0) {
-            tv31.append("温度过低" + (bytes1[0] >> 6 & 0x03) + "级 ");
-        } else {
-//            tv31.append("无故障");
+            tv31.append("压差过大" + (bytes1[0] & 0x03) + "级\n");
+        }
+        if ((bytes1[0] >> 2 & 0x03) != 0) {
+            tv31.append("温差过大" + (bytes1[0] >> 2 & 0x03) + "级\n");
+        }
+        if ((bytes1[0] >> 4 & 0x03) != 0) {
+            tv31.append("温度过高" + (bytes1[0] >> 4 & 0x03) + "级\n");
+        }
+        if ((bytes1[0] >> 6 & 0x03) != 0) {
+            tv31.append("温度过低" + (bytes1[0] >> 6 & 0x03) + "级\n");
         }
 //        tv31.append(" 电池故障3:");
         byte[] bytes2 = BytesHexStrTranslate.toBytes(split[56]);
         if ((bytes2[0] & 0x03) != 0) {
-            tv31.append("充电过流" + (bytes2[0] & 0x03) + "级 ");
-        } else if ((bytes2[0] >> 2 & 0x03) != 0) {
-            tv31.append("放电过流" + (bytes2[0] >> 2 & 0x03) + "级 ");
-        } else if ((bytes2[0] >> 4 & 0x03) != 0) {
-            tv31.append("SOC过高" + (bytes2[0] >> 4 & 0x03) + "级 ");
-        } else if ((bytes2[0] >> 6 & 0x03) != 0) {
-            tv31.append("SOC过低" + (bytes2[0] >> 6 & 0x03) + "级 ");
-        } else {
-//            tv31.append("无故障");
+            tv31.append("充电过流" + (bytes2[0] & 0x03) + "级\n");
+        }
+        if ((bytes2[0] >> 2 & 0x03) != 0) {
+            tv31.append("放电过流" + (bytes2[0] >> 2 & 0x03) + "级\n");
+        }
+        if ((bytes2[0] >> 4 & 0x03) != 0) {
+            tv31.append("SOC过高" + (bytes2[0] >> 4 & 0x03) + "级\n");
+        }
+        if ((bytes2[0] >> 6 & 0x03) != 0) {
+            tv31.append("SOC过低" + (bytes2[0] >> 6 & 0x03) + "级\n");
         }
 
 
