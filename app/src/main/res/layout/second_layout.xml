@@ -48,6 +48,51 @@
             android:textColor="#3d85c6" />
     </LinearLayout>
 
+    <EditText
+        android:id="@+id/edittext_sendText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="1"
+        android:hint="请输入命令格式"
+        android:maxLines="1"
+        android:shadowRadius="1"
+        android:textSize="12sp"
+        android:visibility="visible" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <CheckBox
+            android:id="@+id/checkBox_auto_send"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="自动发送" />
+
+        <TextView
+            android:id="@+id/textView_send_interval"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="2"
+            android:text="发送间隔(ms)："
+            android:textColor="#000000"
+            android:textSize="15dp" />
+
+        <EditText
+            android:id="@+id/edittext_send_interval_val"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="3"
+            android:enabled="true"
+            android:inputType="number"
+            android:text="1000" />
+    </LinearLayout>
+
     <TextView
         android:id="@+id/textView_isconnected_info"
         android:layout_width="wrap_content"
@@ -81,8 +126,8 @@
             android:id="@+id/textView_Rec_Num_Val"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
             android:layout_marginRight="51dp"
             android:text="0" />
 
@@ -484,7 +529,8 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="wrap_content"
+                android:minHeight="40dp"
                 android:orientation="horizontal">
 
                 <TextView
@@ -511,7 +557,8 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
+                android:layout_height="wrap_content"
+                android:minHeight="40dp"
                 android:orientation="horizontal">
 
                 <TextView
@@ -520,6 +567,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center_vertical"
+                    android:scrollbars="vertical"
                     android:text=""
                     android:textColor="#ff0000" />
 
@@ -623,25 +671,12 @@
             android:id="@+id/textView_send_val"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
             android:layout_marginRight="51dp"
             android:text="0" />
     </RelativeLayout>
 
-    <EditText
-        android:id="@+id/edittext_sendText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="200"
-        android:enabled="false"
-        android:fontFamily="1"
-        android:hint="please input string!"
-        android:lines="1"
-        android:maxLength="150"
-        android:maxLines="1"
-        android:shadowRadius="1"
-        android:visibility="gone" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -682,39 +717,6 @@
         </RadioGroup>
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:visibility="gone">
-
-        <CheckBox
-            android:id="@+id/checkBox_auto_send"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="自动发送" />
-
-        <TextView
-            android:id="@+id/textView_send_interval"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="2"
-            android:text="发送间隔(ms)："
-            android:textColor="#000000"
-            android:textSize="15dp" />
-
-        <EditText
-            android:id="@+id/edittext_send_interval_val"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ems="3"
-            android:enabled="true"
-            android:inputType="number"
-            android:text="1000" />
-    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"

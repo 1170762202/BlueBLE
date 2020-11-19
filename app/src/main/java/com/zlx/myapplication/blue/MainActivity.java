@@ -13,6 +13,7 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -27,6 +28,7 @@ import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -111,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tv31;
     private TextView tv32;
     private boolean flag;
+    private CountDownTimer countDownTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,40 +159,54 @@ public class MainActivity extends AppCompatActivity {
         // 在连接成功之前保证其他发送接收的控件不可用
         editText_sendMessage.setEnabled(false);
         checkBox_autoSend.setEnabled(false);
+        checkBox_autoSend.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                Toast.makeText(MainActivity.this, "自动发送已" + (b ? "开启" : "关闭"), Toast.LENGTH_SHORT).show();
+
+                if (b) {
+                    if (countDownTimer == null) {
+                        countDownTimer = new CountDownTimer(24 * 60 * 60 * 1000, Integer.parseInt(editText_sendIntervalVal.getText().toString())) {
+                            @Override
+                            public void onTick(long l) {
+                                try {
+                                    String message = editText_sendMessage.getText().toString();
+                                    final byte[] Tx_value = message.getBytes("UTF-8");
+                                    mService.writeRXCharacteristic(Tx_value);
+                                    handler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            sendValueLength.setText(Tx_value.length + "");
+                                            sendTimes.setText((++sendValueNum) + "");
+                                        }
+                                    });
+                                } catch (UnsupportedEncodingException e) {
+                                    System.out.println(e.toString());
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            @Override
+                            public void onFinish() {
+
+                            }
+                        };
+                        countDownTimer.start();
+                    }
+                } else {
+
+                    if (countDownTimer != null) {
+                        countDownTimer.cancel();
+                        countDownTimer = null;
+                    }
+                }
+            }
+        });
         editText_sendIntervalVal.setEnabled(false);
         btnSend.setEnabled(false);
         Init_service();// 初始化后台服务
 
-        new Thread() {
-            public void run() {
-                while (true) {
-                    if (checkBox_autoSend.isChecked()) {
-                        try {
-                            String message = editText_sendMessage.getText().toString();
-                            final byte[] Tx_value = message.getBytes("UTF-8");
-                            mService.writeRXCharacteristic(Tx_value);
-                            handler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    sendValueLength.setText(Tx_value.length + "");
-                                    sendTimes.setText((++sendValueNum) + "");
-                                }
-                            });
-                            Thread.sleep(Integer.parseInt(editText_sendIntervalVal.getText().toString()));
-                        } catch (UnsupportedEncodingException e) {
-                            System.out.println(e.toString());
-                            e.printStackTrace();
-                        } catch (InterruptedException e) {
-                            System.out.println(e.toString());
-                            e.printStackTrace();
-                        }
-                    }
 
-                }
-            }
-
-            ;
-        }.start();
         // "scan/stop"按钮对应的监听器
         btnScan.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -684,7 +701,8 @@ public class MainActivity extends AppCompatActivity {
         double 电池故障2 = calcOneByte(split[55], 1, 0, 1);
         double 电池故障3 = calcOneByte(split[56], 1, 0, 1);
         byte[] bytes = BytesHexStrTranslate.toBytes(split[54]);
-        tv31.setText("电池故障:\n");
+        tv31.setText("电池故障:");
+        tv31.append("\n");
         if ((bytes[0] & 0x03) != 0) {
             tv31.append("总压过高" + (bytes[0] & 0x03) + "级\n");
         }
@@ -731,13 +749,13 @@ public class MainActivity extends AppCompatActivity {
 //        tv31.setText("电池故障1:" + 电池故障1 + getStatus(电池故障1) + "     电池故障2:" +
 //                电池故障2 + getStatus(电池故障2) + "     电池故障3:" + 电池故障3 + getStatus(电池故障3));
 
-        double 检验码 = 0;
-        for (String s : split) {
-            检验码 += Integer.parseInt(s, 16);
-        }
-        检验码 = 检验码 / 100;
-        tv32.setText("检验码:" + 检验码);
-        tv32.setText("检验码:" + 检验码);
+//        double 检验码 = 0;
+//        for (String s : split) {
+//            检验码 += Integer.parseInt(s, 16);
+//        }
+//        检验码 = 检验码 / 100;
+//        tv32.setText("检验码:" + 检验码);
+//        tv32.setText("检验码:" + 检验码);
     }
 
     private void replacePointZero(TextView textView) {
