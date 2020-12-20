@@ -5,7 +5,9 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- 仅适用于支持BLE的设备 -->
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -13,7 +15,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".blue.MainActivity">
+        <activity android:name=".MainAc">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -27,10 +29,13 @@
             android:theme="@android:style/Theme.Dialog" />
         <activity
             android:name=".MainActivity1"/>
-        <activity android:name=".MainAc" />
+        <activity android:name=".EnumPortActivity" />
+
 
         <service
             android:name=".blue.UartService"
+            android:enabled="true" />
+        <service android:name=".ACSUtilityService"
             android:enabled="true" />
 
     </application>

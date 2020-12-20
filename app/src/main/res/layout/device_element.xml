@@ -18,31 +18,30 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="6dp" 
-    android:textColor="@color/black"
-    >
+    android:padding="6dp" >
 
     <TextView
         android:id="@+id/paired"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:text="@string/paired"
+        android:textColor="#000000"
+        android:text="paired"
         android:textSize="12dp" />
 
     <TextView
         android:id="@+id/rssi"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:textColor="#000000"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
         android:layout_below="@+id/paired"
         android:textSize="12dp" />
 
     <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
+        android:textColor="#000000"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:textSize="14dp" />
@@ -50,6 +49,7 @@
     <TextView
         android:id="@+id/address"
         android:layout_width="wrap_content"
+        android:textColor="#000000"
         android:layout_height="wrap_content"
         android:layout_below="@+id/name"
         android:textSize="10dp" />
