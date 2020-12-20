@@ -48,6 +48,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -148,6 +149,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 
         @Override
         public void didPackageReceived(blePort port, byte[] packageToSend) {
+            Log.e("TAG", "packageReceived=" + Arrays.toString(packageToSend));
             // TODO Auto-generated method stub
 			/*try {
 				mReceivedData = new String(packageToSend, "GBK");
@@ -173,6 +175,8 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
                     }
                     sb.append(Integer.toHexString(b & 0xff) + " ");
                 }
+                Log.e("TAG", "接收到=" + sb.toString());
+
             } else {
                 String Rx_str = "";
                 for (int i = 0; i < packageToSend.length; i++) {
@@ -226,54 +230,46 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
     };
 
     private List<String> list = new ArrayList<>();
-    boolean flag = false;
+    boolean flag = true;
     private int REQUEST_ENABLE_BT = 11;
 
     private void doReceiptMsg(String rxValue) throws Exception {
 //        String Rx_str = new String(rxValue, "UTF-8");
 //        listAdapter.add("[" + DateFormat.getTimeInstance().format(new Date()) + "] RX: " + Rx_str);
         String[] split1 = rxValue.split(" ");//每个字节的数组
-        for (int i = 0; i < split1.length; i++) {
-            if ((split1[i].equals("55")) && (split1[i + 1].equals("AA") || split1[i + 1].equals("aa"))) {
-                flag = true;
-                break;
-            }
-        }
-        if (flag) {
-            for (String s : split1) {
-                list.add(s);
-            }
-        }
-        if (list.size() > 59) {
-            flag = false;
-            list.clear();
+//        for (int i = 0; i < split1.length; i++) {
+//            if ((split1[i].equals("55")) && (split1[i + 1].equals("AA") || split1[i + 1].equals("aa"))) {
+//                flag = true;
+//                break;
+//            }
+//        }
+        list.addAll(Arrays.asList(split1));
+
+        if (list.size() < 458) {
             return;
         }
 
-        if (list.size() == 59) {
-            flag = false;
+        Log.e("TAG", "sp=" + list.size());
 
-            for (int i = 0; i < list.size(); i++) {
-                String s = list.get(i);
-            }
-
-
-            StringBuilder builder = new StringBuilder();
-            for (String s : list) {
-                builder.append(s + " ");
-            }
-//        listAdapter.add("收到的数据：" + sb.toString());
-            String[] split = builder.toString().split(" ");
-//        boolean flag1 = (crc(rxValue)) >> 8 == rxValue[58] && (byte) crc(rxValue) == rxValue[59];
-            set(split);
-
-
+        StringBuilder builder = new StringBuilder();
+        for (String s : list) {
+            builder.append(s + " ");
         }
+//        listAdapter.add("收到的数据：" + sb.toString());
+        String[] split = builder.toString().split(" ");
+//        boolean flag1 = (crc(rxValue)) >> 8 == rxValue[58] && (byte) crc(rxValue) == rxValue[59];
+        set(split);
+        list.clear();
     }
 
     private double calcTwoByte(String low, String high, double ex, int offset, int saveNo) {
         return savePost((Integer.parseInt(low, 16) + Integer.parseInt(high, 16) * 256) * ex + offset, saveNo);
     }
+
+    private double calc3Byte(String low, String mid, String high, double ex, int offset, int saveNo) {
+        return savePost((Integer.parseInt(low, 16) + Integer.parseInt(mid, 16) + Integer.parseInt(high, 16) * 256) * ex + offset, saveNo);
+    }
+
 
     private double calcOneByte(String low, double ex, int offset, int saveNo) {
         return savePost(Integer.parseInt(low, 16) * ex + offset, saveNo);
@@ -296,11 +292,118 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 
     private void set(String[] split) {
         StringBuilder sb = new StringBuilder();
-        double volt = calcTwoByte(split[2], split[3], 0.1, 0, 1);
-        double dianliu = calcTwoByte(split[4], split[5], 0.1, -3000, 1);
-        sb.append("总电压: " + volt + "V");
-        sb.append("总电流: " + (dianliu > 0 ? "放电 " : "充电 ") + dianliu + "A");
-        double SOC = calcTwoByte(split[6], split[7], 0.1, 0, 1);
+        double 内总压 = calcTwoByte(split[7], split[8], 0.1, 0, 1);
+        double 外总压 = calcTwoByte(split[9], split[10], 0.1, 0, 1);
+        sb.append("内总压: " + 内总压 + "V");
+        sb.append("\n");
+        sb.append("外总压: " + 外总压 + "V");
+        sb.append("\n");
+        double 电流 = calcTwoByte(split[11], split[12], 0.1, 3000, 1);
+        sb.append("电流: " + (电流 > 0 ? "放电 " : "充电 ") + 电流 + "A");
+        sb.append("\n");
+
+        double SOC = calcTwoByte(split[13], split[14], 0.1, 0, 1);
+        sb.append("SOC: " + SOC + "%");
+        sb.append("\n");
+
+        double SOH = calcTwoByte(split[15], split[16], 0.1, 0, 1);
+        sb.append("SOH: " + SOH + "%");
+        sb.append("\n");
+
+        double 最高单体电压 = calcTwoByte(split[17], split[18], 1, 0, 1);
+        sb.append("最高单体电压: " + 最高单体电压 + "mV");
+        sb.append("\n");
+
+        double 最低单体电压 = calcTwoByte(split[19], split[20], 1, 0, 1);
+        sb.append("最低单体电压: " + 最低单体电压 + "mV");
+        sb.append("\n");
+
+        double 最高单体电压位置 = calcOneByte(split[21], 1, 0, 1);
+        sb.append("最高单体电压位置: " + 最高单体电压位置 + "");
+        sb.append("\n");
+
+        double 最低单体电压位置 = calcOneByte(split[22], 1, 0, 1);
+        sb.append("最低单体电压位置: " + 最低单体电压位置 + "");
+        sb.append("\n");
+
+        double 最高单体温度 = calcOneByte(split[23], 1, -40, 1);
+        sb.append("最高单体温度: " + 最高单体温度 + "℃");
+        sb.append("\n");
+
+        double 最低单体温度 = calcOneByte(split[24], 1, -40, 1);
+        sb.append("最低单体温度: " + 最低单体温度 + "℃");
+        sb.append("\n");
+
+        double 最高单体温度位置 = calcOneByte(split[25], 1, -40, 1);
+        sb.append("最高单体温度位置: " + 最高单体温度位置 + "℃");
+        sb.append("\n");
+
+        double 最低单体温度位置 = calcOneByte(split[26], 1, -40, 1);
+        sb.append("最低单体温度位置: " + 最低单体温度位置 + "℃");
+        sb.append("\n");
+
+        //27 + 20*2 -1
+        int index = 66;
+        int pos = 0;
+        for (int i = 27; i <= index; i += 2) {
+            double cell = calcTwoByte(split[i], split[i + 1], 1, 0, 1);
+            sb.append("单体电压_" + (pos++) + ": " + cell + "mV");
+            sb.append("\n");
+        }
+
+        //67 + 10 * 1 - 1
+        index = 76;
+        pos = 0;
+        for (int i = 67; i <= index; i++) {
+            double cell = calcTwoByte(split[i], split[i + 1], 1, 0, 1);
+            sb.append("电池温度_" + (pos++) + ": " + cell + "℃");
+            sb.append("\n");
+        }
+        double 环境温度 = calcOneByte(split[77], 1, 0, 1);
+        sb.append("环境温度1: " + 环境温度 + "℃");
+        sb.append("\n");
+
+        double 环境温度2 = calcOneByte(split[78], 1, 0, 1);
+        sb.append("环境温度2: " + 环境温度2 + "℃");
+        sb.append("\n");
+
+        double MOS管温度 = calcOneByte(split[79], 1, 0, 1);
+        sb.append("MOS管温度: " + MOS管温度 + "℃");
+        sb.append("\n");
+
+        double 均衡状态 = calc3Byte(split[80], split[81], split[82], 1, 0, 1);
+        sb.append("均衡状态: " + (均衡状态 == 0 ? "断开" : "闭合"));
+        sb.append("\n");
+
+        double Satus1 = calcOneByte(split[83], 1, 0, 1);
+        sb.append("Satus1: " + Satus1);
+        sb.append("\n");
+
+        double Satus2 = calcOneByte(split[84], 1, 0, 1);
+        sb.append("Satus2: " + Satus2);
+        sb.append("\n");
+
+        index = 93;
+        pos = 0;
+        for (int i = 85; i <= index; i++) {
+            byte[] bytes = BytesHexStrTranslate.toBytes(split[i]);
+            pos++;
+            sb.append("电池系统故障" + pos + ":" + "" + getDCStatus(bytes[0] >> pos & 0x01));
+        }
+
+        index = 101;
+        pos = 0;
+        for (int i = 94; i <= index; i++) {
+            byte[] bytes = BytesHexStrTranslate.toBytes(split[i]);
+            pos++;
+            sb.append("BMS硬件故障" + pos + ":" + "" + getDCStatus(bytes[0] >> pos & 0x01));
+        }
+
+        double 电池系统故障1 = calcOneByte(split[85], 1, 0, 1);
+        sb.append("Satus2: " + Satus2);
+        sb.append("\n");
+
+
         double 电池状态 = calcOneByte(split[8], 1, 0, 1);
         String 电池状态_status = null;
         if (电池状态 == 0) {
@@ -310,7 +413,6 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         } else {
             电池状态_status = "放电";
         }
-        sb.append("SOC: " + SOC + "%");
         sb.append("电池状态:" + 电池状态_status);
         byte[] bytes3 = BytesHexStrTranslate.toBytes(split[9]);
 //        tv5.setVisibility(View.GONE);
@@ -362,52 +464,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 //        replacePointZero(tv15);
 //        replacePointZero(tv16);
 
-        double 电池温差 = calcOneByte(split[33], 1, 0, 1);
-        double 最高单体电压 = calcTwoByte(split[34], split[35], 1, 0, 1);
-        sb.append("电池温差:" + 电池温差 + "℃");
-        sb.append("最高单体电压:" + 最高单体电压 + "mV");
-//        replacePointZero(tv17);
-//        replacePointZero(tv18);
 
-        double 最低单体电压 = calcTwoByte(split[36], split[37], 1, 0, 1);
-        double 最高单体电压位置 = calcOneByte(split[38], 1, 0, 1);
-        sb.append("最低单体电压:" + 最低单体电压 + "mV");
-        sb.append("最高单体电压位置:" + 最高单体电压位置);
-//        replacePointZero(tv19);
-//        replacePointZero(tv20);
-
-        double 最低单体电压位置 = calcOneByte(split[39], 1, 0, 1);
-        double 最高温度 = calcOneByte(split[40], 1, -40, 1);
-        sb.append("最低单体电压位置:" + 最低单体电压位置);
-        sb.append("最高温度:" + 最高温度 + "℃");
-//        replacePointZero(tv21);
-//        replacePointZero(tv22);
-
-        double 最低温度 = calcOneByte(split[41], 1, -40, 1);
-        double 最高温度位置 = calcOneByte(split[42], 1, 0, 1);
-        sb.append("最低温度:" + 最低温度 + "℃");
-        sb.append("最高温度位置:" + 最高温度位置);
-//        replacePointZero(tv23);
-//        replacePointZero(tv24);
-
-        double 最低温度位置 = calcOneByte(split[43], 1, 0, 1);
-        double 过充次数 = calcTwoByte(split[44], split[45], 1, 0, 1);
-        sb.append("最低温度位置:" + 最低温度位置);
-        sb.append("过充次数:" + 过充次数);
-//        replacePointZero(tv25);
-//        replacePointZero(tv26);
-
-        double 过放次数 = calcTwoByte(split[46], split[47], 1, 0, 1);
-        double 充电过流次数 = calcTwoByte(split[48], split[49], 1, 0, 1);
-        sb.append("过放次数:" + 过放次数);
-        sb.append("充电过流次数:" + 充电过流次数);
-//        replacePointZero(tv27);
-//        replacePointZero(tv28);
-
-        double 过温次数 = calcTwoByte(split[50], split[51], 1, 0, 1);
-        double 循环次数 = calcTwoByte(split[52], split[53], 1, 0, 1);
-        sb.append("过温次数:" + 过温次数);
-        sb.append("循环次数:" + 循环次数);
 //        replacePointZero(tv29);
 //        replacePointZero(tv30);
 
