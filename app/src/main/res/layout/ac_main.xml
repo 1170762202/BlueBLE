@@ -36,6 +36,8 @@
                 android:id="@+id/countShow"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
+
                 android:layout_below="@id/openOrClosePortsBtn"
                 android:layout_margin="5dp"
                 android:orientation="vertical">
@@ -104,6 +106,8 @@
                 android:id="@+id/clearBtn"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
+
                 android:layout_below="@id/countShow"
                 android:layout_margin="5dp"
                 android:text="Clear" />
@@ -139,6 +143,8 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
+                    android:visibility="gone"
+
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
@@ -154,6 +160,8 @@
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:visibility="gone"
+
                         android:orientation="horizontal">
 
                         <Switch
@@ -184,6 +192,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="170dp"
                     android:layout_margin="5dp"
+                    android:visibility="gone"
                     android:background="#000000"
                     android:fadeScrollbars="false"
                     android:scrollbarAlwaysDrawVerticalTrack="true"
@@ -243,11 +252,34 @@
                     android:layout_width="match_parent"
                     android:layout_height="130dp"
                     android:layout_margin="5dp"
+                    android:text="7E 0A 01 01 00 6E E0 E0 49 71"
                     android:background="#000000"
                     android:gravity="top"
                     android:textColor="#FFFFFF" />
             </LinearLayout>
 
+
+
+            <EditText
+                android:id="@+id/internal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="44dp"
+                android:gravity="center_horizontal"
+                android:hint="Internal"
+                android:inputType="numberSigned"
+                android:text="100"/>
+
+
+
+        </RelativeLayout>
+            <CheckBox
+                android:id="@+id/period"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_marginBottom="7dp"
+                android:text="Periodic" />
             <Button
                 android:id="@+id/sendBtn"
                 android:layout_width="100dp"
@@ -257,30 +289,6 @@
                 android:layout_alignParentBottom="true"
                 android:layout_margin="5dp"
                 android:text="send" />
-
-            <EditText
-                android:id="@+id/internal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_above="@+id/sendBtn"
-                android:layout_alignLeft="@+id/sendBtn"
-                android:layout_marginBottom="44dp"
-                android:gravity="center_horizontal"
-                android:hint="Internal"
-                android:inputType="numberSigned"
-                android:text="100"></EditText>
-
-            <CheckBox
-                android:id="@+id/period"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_above="@+id/sendBtn"
-                android:layout_alignLeft="@+id/internal"
-                android:layout_marginBottom="7dp"
-                android:text="Periodic" />
-
-        </RelativeLayout>
-
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recyclerView"
                 android:layout_width="match_parent"
