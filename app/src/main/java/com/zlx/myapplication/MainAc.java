@@ -167,11 +167,11 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 				e.printStackTrace();
 			}*/
             StringBuilder sb = new StringBuilder();
+            isReceiveHex = true;
             if (!isClear)
                 sb.append(mReceivedData);
             if (isReceiveHex) {
                 for (byte b : packageToSend) {
-                    sb.append("0x");
                     if ((b & 0xff) <= 0x0f) {
                         sb.append("0");
                     }
@@ -179,6 +179,11 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
                 }
                 Log.e("TAG", "接收到=" + sb.toString());
 
+                try {
+                    doReceiptMsg(sb.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             } else {
                 String Rx_str = "";
                 for (int i = 0; i < packageToSend.length; i++) {
@@ -224,7 +229,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         public void didPackageSended(boolean succeed) {
             // TODO Auto-generated method stub
             if (succeed) {
-                Toast.makeText(MainAc.this, "数据发送成功", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MainAc.this, "数据发送成功", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(MainAc.this, "数据发送失败", Toast.LENGTH_SHORT).show();
             }
@@ -408,7 +413,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
             list.add("第" + (i + 1) + "节电压均衡");
         }
         for (int i = 0; i < b.length; i++) {
-            sb.append(list.get(i) + ": " + (b[i] == 0 ? "断开" : "闭合"));
+            sb.append(list.get(i) + ": " + (b[b.length - 1 - i] == 0 ? "断开" : "闭合"));
             sb.append("\n");
         }
         //Balance_Satus byte2
@@ -418,7 +423,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
             list.add("第" + (i + 9) + "节电压均衡");
         }
         for (int i = 0; i < b1.length; i++) {
-            sb.append(list.get(i) + ": " + (b1[i] == 0 ? "断开" : "闭合"));
+            sb.append(list.get(i) + ": " + (b1[b1.length - 1 - i] == 0 ? "断开" : "闭合"));
             sb.append("\n");
         }
         //Balance_Satus byte3
@@ -431,7 +436,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         }
         for (int i = 0; i < list.size(); i++) {
             if (i <= b.length - 1) {
-                sb.append(list.get(i) + ": " + (b2[i] == 0 ? "断开" : "闭合"));
+                sb.append(list.get(i) + ": " + (b2[(list.size() - 1 - i)] == 0 ? "断开" : "闭合"));
                 sb.append("\n");
             }
         }
@@ -441,7 +446,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         String[] val = new String[]{"预充开关", "充电开关", "放电开关", "加热开关", "蜂鸣器", "充电限流", "", "", ""};
         for (int i = 0; i < 6; i++) {
             if (i <= bytes4.length - 1) {
-                sb.append(val[i] + ": " + (bytes4[i] == 0 ? "断开" : "闭合"));
+                sb.append(val[i] + ": " + (bytes4[5 - i] == 0 ? "断开" : "闭合"));
                 sb.append("\n");
             }
         }
@@ -992,6 +997,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
     @Override
     protected void onResume() {
         // TODO Auto-generated method stub
+
         super.onResume();
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
