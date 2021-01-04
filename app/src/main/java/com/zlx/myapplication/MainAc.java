@@ -436,7 +436,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         }
         for (int i = 0; i < list.size(); i++) {
             if (i <= b.length - 1) {
-                sb.append(list.get(i) + ": " + (b2[(list.size() - 1 - i)] == 0 ? "断开" : "闭合"));
+                sb.append(list.get(i) + ": " + (b2[(b.length - 1 - i)] == 0 ? "断开" : "闭合"));
                 sb.append("\n");
             }
         }
@@ -446,7 +446,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         String[] val = new String[]{"预充开关", "充电开关", "放电开关", "加热开关", "蜂鸣器", "充电限流", "", "", ""};
         for (int i = 0; i < 6; i++) {
             if (i <= bytes4.length - 1) {
-                sb.append(val[i] + ": " + (bytes4[5 - i] == 0 ? "断开" : "闭合"));
+                sb.append(val[i] + ": " + (bytes4[bytes4.length - 1 - i] == 0 ? "断开" : "闭合"));
                 sb.append("\n");
             }
         }
