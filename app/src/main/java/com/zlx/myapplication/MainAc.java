@@ -430,16 +430,20 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
             }
         }
         for (int i = 0; i < list.size(); i++) {
-            sb.append(list.get(i) + ": " + (b2[i] == 0 ? "断开" : "闭合"));
-            sb.append("\n");
+            if (i <= b.length - 1) {
+                sb.append(list.get(i) + ": " + (b2[i] == 0 ? "断开" : "闭合"));
+                sb.append("\n");
+            }
         }
 
         //status1
         byte[] bytes4 = ParseSystemUtil.parseHexStr2Byte(split[83]);
         String[] val = new String[]{"预充开关", "充电开关", "放电开关", "加热开关", "蜂鸣器", "充电限流", "", "", ""};
         for (int i = 0; i < 6; i++) {
-            sb.append(val[i] + ": " + (bytes4[i] == 0 ? "断开" : "闭合"));
-            sb.append("\n");
+            if (i <= bytes4.length - 1) {
+                sb.append(val[i] + ": " + (bytes4[i] == 0 ? "断开" : "闭合"));
+                sb.append("\n");
+            }
         }
         //status2
 //        byte[] bytes5 = ParseSystemUtil.parseHexStr2Byte(split[84]);
@@ -644,6 +648,9 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 
     private StringBuilder getErrorStatus(String title, byte[] bytes, int index) {
         StringBuilder sb = new StringBuilder();
+        if (index >= bytes.length || (index + 1) >= bytes.length) {
+            return sb;
+        }
         byte aByte = bytes[index];
         byte aByte1 = bytes[index + 1];
 
@@ -1288,7 +1295,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         String data = mSendDataTV.getText().toString();
         Log.e("TAG", "发送数据=" + data);
         ByteArrayBuffer bab = new ByteArrayBuffer(data.length() / 2);
-        isSendHex=true;
+        isSendHex = true;
         if (isSendHex) {
             for (int i = 0; i < data.length(); ) {
                 if (data.charAt(i) != ' ') {

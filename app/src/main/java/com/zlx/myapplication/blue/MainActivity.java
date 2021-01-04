@@ -538,7 +538,7 @@ public class MainActivity extends AppCompatActivity {
             // 未知功能2
             if (action.equals(UartService.DEVICE_DOES_NOT_SUPPORT_UART)) {
                 toastMessage("Device doesn't support UART. Disconnecting");
-                mService.disconnect();
+//                mService.disconnect();
             }
         }
     };
