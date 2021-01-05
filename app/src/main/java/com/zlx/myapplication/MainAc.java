@@ -673,7 +673,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 //                        sb.append("总压正常");
         } else if (aByte == 0 && aByte1 == 1) {
             sb.append(title + "1级故障");
-        } else if (aByte == 1 && aByte1 == 2) {
+        } else if (aByte == 1 && aByte1 == 0) {
             sb.append(title + "2级故障");
         } else if (aByte == 1 && aByte1 == 1) {
             sb.append(title + "3级故障");
