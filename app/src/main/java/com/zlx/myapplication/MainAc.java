@@ -121,6 +121,8 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
                         updateUiObject();
                         showSuccessDialog();
                         getProgressDialog().cancel();
+
+                        mSendBtn.performClick();
                     }
                 });
             } else {
@@ -258,6 +260,11 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         }
 
         Log.e("TAG", "sp=" + list.size());
+        if (!list.get(list.size() - 1).equals("0C".toLowerCase()) || !list.get(list.size() - 2).equals("EB".toLowerCase())) {
+            list.clear();
+            Log.e("TAG", "数据无效");
+            return;
+        }
 
         StringBuilder builder = new StringBuilder();
         for (String s : list) {
@@ -278,9 +285,12 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         return savePost((Integer.parseInt(low, 16) + (Integer.parseInt(mid, 16) * 256) + Integer.parseInt(high, 16) * 256 * 256) * ex + offset, saveNo);
     }
 
-    private double calc4Byte(String low, String low1, String mid, String high, double ex, int offset, int saveNo) {
-        return savePost((Integer.parseInt(low, 16) + (Integer.parseInt(low1, 16) * 256) +
-                (Integer.parseInt(mid, 16) * 256 * 256) + Integer.parseInt(high, 16) * 256 * 256 * 256) * ex + offset, saveNo);
+    private BigDecimal calc4Byte(String low, String low1, String mid, String high, double ex, int offset, int saveNo) {
+
+        BigDecimal multiply = new BigDecimal(Integer.parseInt(high, 16)).multiply(new BigDecimal(256)).multiply(new BigDecimal(256)).multiply(new BigDecimal(256));
+        BigDecimal multiply1 = new BigDecimal(Integer.parseInt(mid, 16)).multiply(new BigDecimal(256).multiply(new BigDecimal(256)));
+        BigDecimal multiply2 = new BigDecimal(Integer.parseInt(low1, 16)).multiply(new BigDecimal(256));
+        return new BigDecimal(Integer.parseInt(low, 16)).add(multiply).add(multiply1).add(multiply2);
     }
 
 
@@ -467,24 +477,24 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 
 
         //充电安时
-        double 充电安时 = calc4Byte(split[101], split[102], split[103], split[104], 1, 0, 1);
-        sb.append("充电安时: " + 充电安时 + "mAh");
+        BigDecimal 充电安时 = calc4Byte(split[101], split[102], split[103], split[104], 1, 0, 1);
+        sb.append("充电安时: " + 充电安时.stripTrailingZeros().toPlainString() + "mAh");
         sb.append("\n");
 
-        double 放电安时 = calc4Byte(split[105], split[106], split[107], split[108], 1, 0, 1);
-        sb.append("放电安时: " + 放电安时 + "mAh");
+        BigDecimal 放电安时 = calc4Byte(split[105], split[106], split[107], split[108], 1, 0, 1);
+        sb.append("放电安时: " + 放电安时.stripTrailingZeros().toPlainString() + "mAh");
         sb.append("\n");
 
-        double 充电总安时 = calc4Byte(split[109], split[11], split[111], split[112], 1, 0, 1);
-        sb.append("充电总安时: " + 充电总安时 + "mAh");
+        BigDecimal 充电总安时 = calc4Byte(split[109], split[11], split[111], split[112], 1, 0, 1);
+        sb.append("充电总安时: " + 充电总安时.stripTrailingZeros().toPlainString() + "mAh");
         sb.append("\n");
 
-        double 放电总安时 = calc4Byte(split[113], split[114], split[115], split[116], 1, 0, 1);
-        sb.append("放电总安时: " + 放电总安时 + "mAh");
+        BigDecimal 放电总安时 = calc4Byte(split[113], split[114], split[115], split[116], 1, 0, 1);
+        sb.append("放电总安时: " + 放电总安时.stripTrailingZeros().toPlainString() + "mAh");
         sb.append("\n");
 
-        double 额定容量 = calc4Byte(split[117], split[118], split[119], split[120], 1, 0, 1);
-        sb.append("额定容量: " + 额定容量 + "mAh");
+        BigDecimal 额定容量 = calc4Byte(split[117], split[118], split[119], split[120], 1, 0, 1);
+        sb.append("额定容量: " + 额定容量.stripTrailingZeros().toPlainString() + "mAh");
         sb.append("\n");
 
 
@@ -661,9 +671,9 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 
         if (aByte == 0 && aByte1 == 0) {
 //                        sb.append("总压正常");
-        } else if (aByte == 1 && aByte1 == 0) {
-            sb.append(title + "1级故障");
         } else if (aByte == 0 && aByte1 == 1) {
+            sb.append(title + "1级故障");
+        } else if (aByte == 1 && aByte1 == 2) {
             sb.append(title + "2级故障");
         } else if (aByte == 1 && aByte1 == 1) {
             sb.append(title + "3级故障");
@@ -679,131 +689,131 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
             byte[] bytes = ParseSystemUtil.parseHexStr2Byte(strings[i]);
             switch (i) {
                 case 94: {
-                    if (!TextUtils.isEmpty(getErrorStatus("软件", bytes, 0))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("软件", bytes, 6))) {
                         sb.append("software:");
-                        sb.append(getErrorStatus("软件", bytes, 0));
+                        sb.append(getErrorStatus("软件", bytes, 6));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("内部EEPROM", bytes, 2))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("内部EEPROM", bytes, 4))) {
                         sb.append("cpu_ee:");
-                        sb.append(getErrorStatus("内部EEPROM", bytes, 2));
+                        sb.append(getErrorStatus("内部EEPROM", bytes, 4));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("外部EEPROM", bytes, 4))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("外部EEPROM", bytes, 2))) {
                         sb.append("ext_ee:");
-                        sb.append(getErrorStatus("外部EEPROM", bytes, 4));
+                        sb.append(getErrorStatus("外部EEPROM", bytes, 2));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("内部FLASH", bytes, 6))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("内部FLASH", bytes, 0))) {
                         sb.append("cpu_flash:");
-                        sb.append(getErrorStatus("内部FLASH", bytes, 6));
+                        sb.append(getErrorStatus("内部FLASH", bytes, 0));
                         sb.append("\n");
                     }
 
                     break;
                 }
                 case 95: {
-                    if (!TextUtils.isEmpty(getErrorStatus("外部FLASH", bytes, 0))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("外部FLASH", bytes, 6))) {
                         sb.append("ext_flash:");
-                        sb.append(getErrorStatus("外部FLASH", bytes, 0));
+                        sb.append(getErrorStatus("外部FLASH", bytes, 6));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("外部时钟", bytes, 2))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("外部时钟", bytes, 4))) {
                         sb.append("ext_clock:");
-                        sb.append(getErrorStatus("外部时钟", bytes, 2));
+                        sb.append(getErrorStatus("外部时钟", bytes, 4));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("电流检测", bytes, 4))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("电流检测", bytes, 2))) {
                         sb.append("cur_det:");
-                        sb.append(getErrorStatus("电流检测", bytes, 4));
+                        sb.append(getErrorStatus("电流检测", bytes, 2));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("电芯电压检测", bytes, 6))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("电芯电压检测", bytes, 0))) {
                         sb.append("cellv_det:");
-                        sb.append(getErrorStatus("电芯电压检测", bytes, 6));
+                        sb.append(getErrorStatus("电芯电压检测", bytes, 0));
                         sb.append("\n");
                     }
                     break;
                 }
                 case 96: {
-                    if (!TextUtils.isEmpty(getErrorStatus("温度检测", bytes, 0))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("温度检测", bytes, 6))) {
                         sb.append("temper_det:");
-                        sb.append(getErrorStatus("温度检测", bytes, 0));
+                        sb.append(getErrorStatus("温度检测", bytes, 6));
                         sb.append("\n");
                     }
-                    if (!TextUtils.isEmpty(getErrorStatus("负载检测", bytes, 2))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("负载检测", bytes, 4))) {
                         sb.append("load_det:");
-                        sb.append(getErrorStatus("负载检测", bytes, 2));
+                        sb.append(getErrorStatus("负载检测", bytes, 4));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("充电机检测", bytes, 4))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("充电机检测", bytes, 2))) {
                         sb.append("chger_det:");
-                        sb.append(getErrorStatus("充电机检测", bytes, 4));
+                        sb.append(getErrorStatus("充电机检测", bytes, 2));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("AFE器件", bytes, 6))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("AFE器件", bytes, 0))) {
                         sb.append("afe_devi:");
-                        sb.append(getErrorStatus("AFE器件", bytes, 6));
+                        sb.append(getErrorStatus("AFE器件", bytes, 0));
                         sb.append("\n");
                     }
                     break;
                 }
                 case 97: {
-                    if (!TextUtils.isEmpty(getErrorStatus("CAN通讯", bytes, 0))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("CAN通讯", bytes, 6))) {
                         sb.append("can_comm:");
-                        sb.append(getErrorStatus("CAN通讯", bytes, 0));
+                        sb.append(getErrorStatus("CAN通讯", bytes, 6));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("485通讯", bytes, 2))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("485通讯", bytes, 4))) {
                         sb.append("rs485_comm:");
-                        sb.append(getErrorStatus("485通讯", bytes, 2));
+                        sb.append(getErrorStatus("485通讯", bytes, 4));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("232通讯", bytes, 4))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("232通讯", bytes, 2))) {
                         sb.append("rs232_comm:");
-                        sb.append(getErrorStatus("232通讯", bytes, 4));
+                        sb.append(getErrorStatus("232通讯", bytes, 2));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("系统地址码", bytes, 6))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("系统地址码", bytes, 0))) {
                         sb.append("sys_addr:");
-                        sb.append(getErrorStatus("系统地址码", bytes, 6));
+                        sb.append(getErrorStatus("系统地址码", bytes, 0));
                         sb.append("\n");
                     }
 
                     break;
                 }
                 case 98: {
-                    if (!TextUtils.isEmpty(getErrorStatus("短路", bytes, 0))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("短路", bytes, 6))) {
                         sb.append("short_cur:");
-                        sb.append(getErrorStatus("短路", bytes, 0));
+                        sb.append(getErrorStatus("短路", bytes, 6));
                         sb.append("\n");
                     }
-                    if (!TextUtils.isEmpty(getErrorStatus("电芯温度检测", bytes, 2))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("电芯温度检测", bytes, 4))) {
                         sb.append("电芯温度检测:");
-                        sb.append(getErrorStatus("电芯温度检测", bytes, 2));
+                        sb.append(getErrorStatus("电芯温度检测", bytes, 4));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("环境温度检测", bytes, 4))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("环境温度检测", bytes, 2))) {
                         sb.append("环境温度检测:");
-                        sb.append(getErrorStatus("环境温度检测", bytes, 4));
+                        sb.append(getErrorStatus("环境温度检测", bytes, 2));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("MOS管温度检测", bytes, 6))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("MOS管温度检测", bytes, 0))) {
                         sb.append("MOS管温度检测:");
-                        sb.append(getErrorStatus("MOS管温度检测", bytes, 6));
+                        sb.append(getErrorStatus("MOS管温度检测", bytes, 0));
                         sb.append("\n");
                     }
 
@@ -830,121 +840,121 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
             byte[] bytes = ParseSystemUtil.parseHexStr2Byte(strings[i]);
             switch (i) {
                 case 85: {
-                    if (!TextUtils.isEmpty(getErrorStatus("总压过高", bytes, 0))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("总压过高", bytes, 6))) {
                         sb.append("SumVHigh:");
-                        sb.append(getErrorStatus("总压过高", bytes, 0));
+                        sb.append(getErrorStatus("总压过高", bytes, 6));
                         sb.append("\n");
                     }
-                    if (!TextUtils.isEmpty(getErrorStatus("总压过低", bytes, 2))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("总压过低", bytes, 4))) {
                         sb.append("SumVLow:");
-                        sb.append(getErrorStatus("总压过低", bytes, 2));
+                        sb.append(getErrorStatus("总压过低", bytes, 4));
                         sb.append("\n");
                     }
-                    if (!TextUtils.isEmpty(getErrorStatus("单体电压过高", bytes, 4))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("单体电压过高", bytes, 2))) {
                         sb.append("CellVHigh:");
-                        sb.append(getErrorStatus("单体电压过高", bytes, 4));
+                        sb.append(getErrorStatus("单体电压过高", bytes, 2));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("单体电压过低", bytes, 6))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("单体电压过低", bytes, 0))) {
                         sb.append("CellVLow:");
-                        sb.append(getErrorStatus("单体电压过低", bytes, 6));
+                        sb.append(getErrorStatus("单体电压过低", bytes, 0));
                         sb.append("\n");
                     }
 
                 }
                 break;
                 case 86: {
-                    if (!TextUtils.isEmpty(getErrorStatus("电压不均衡", bytes, 0))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("电压不均衡", bytes, 6))) {
                         sb.append("DeltVHigh:");
-                        sb.append(getErrorStatus("电压不均衡", bytes, 0));
+                        sb.append(getErrorStatus("电压不均衡", bytes, 6));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("温度不均衡", bytes, 2))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("温度不均衡", bytes, 4))) {
                         sb.append("DeltTHigh:");
-                        sb.append(getErrorStatus("温度不均衡", bytes, 2));
+                        sb.append(getErrorStatus("温度不均衡", bytes, 4));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("充电温度过高", bytes, 4))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("充电温度过高", bytes, 2))) {
                         sb.append("THighChg:");
-                        sb.append(getErrorStatus("充电温度过高", bytes, 4));
+                        sb.append(getErrorStatus("充电温度过高", bytes, 2));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("充电温度过低", bytes, 6))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("充电温度过低", bytes, 0))) {
                         sb.append("TLowChg:");
-                        sb.append(getErrorStatus("充电温度过低", bytes, 6));
+                        sb.append(getErrorStatus("充电温度过低", bytes, 0));
                         sb.append("\n");
                     }
 
                 }
                 break;
                 case 87: {
-                    if (!TextUtils.isEmpty(getErrorStatus("放电温度过高", bytes, 0))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("放电温度过高", bytes, 6))) {
                         sb.append("THighDch:");
-                        sb.append(getErrorStatus("放电温度过高", bytes, 0));
+                        sb.append(getErrorStatus("放电温度过高", bytes, 6));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("放电温度过低", bytes, 2))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("放电温度过低", bytes, 4))) {
                         sb.append("TLowDch:");
-                        sb.append(getErrorStatus("放电温度过低", bytes, 2));
+                        sb.append(getErrorStatus("放电温度过低", bytes, 4));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("环境温度过高", bytes, 4))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("环境温度过高", bytes, 2))) {
                         sb.append("THighEnv:");
-                        sb.append(getErrorStatus("环境温度过高", bytes, 4));
+                        sb.append(getErrorStatus("环境温度过高", bytes, 2));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("环境温度过低", bytes, 6))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("环境温度过低", bytes, 0))) {
                         sb.append("TLowEnv:");
-                        sb.append(getErrorStatus("环境温度过低", bytes, 6));
+                        sb.append(getErrorStatus("环境温度过低", bytes, 0));
                         sb.append("\n");
                     }
 
                 }
                 break;
                 case 88: {
-                    if (!TextUtils.isEmpty(getErrorStatus("MOS温度过高", bytes, 0))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("MOS温度过高", bytes, 6))) {
                         sb.append("MosTHigh:");
-                        sb.append(getErrorStatus("MOS温度过高", bytes, 0));
+                        sb.append(getErrorStatus("MOS温度过高", bytes, 6));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("充电电流过高", bytes, 2))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("充电电流过高", bytes, 4))) {
                         sb.append("CurHighChg:");
-                        sb.append(getErrorStatus("充电电流过高", bytes, 2));
+                        sb.append(getErrorStatus("充电电流过高", bytes, 4));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("放电电流过高", bytes, 4))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("放电电流过高", bytes, 2))) {
                         sb.append("CurHighDch:");
-                        sb.append(getErrorStatus("放电电流过高", bytes, 4));
+                        sb.append(getErrorStatus("放电电流过高", bytes, 2));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("SOC过高", bytes, 6))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("SOC过高", bytes, 0))) {
                         sb.append("TLoSocHigh:");
-                        sb.append(getErrorStatus("SOC过高", bytes, 6));
+                        sb.append(getErrorStatus("SOC过高", bytes, 0));
                         sb.append("\n");
                     }
 
                 }
                 break;
                 case 89: {
-                    if (!TextUtils.isEmpty(getErrorStatus("SOC过低", bytes, 0))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("SOC过低", bytes, 6))) {
                         sb.append("SocLow:");
-                        sb.append(getErrorStatus("SOC过低", bytes, 0));
+                        sb.append(getErrorStatus("SOC过低", bytes, 6));
                         sb.append("\n");
                     }
 
-                    if (!TextUtils.isEmpty(getErrorStatus("SOH过低", bytes, 2))) {
+                    if (!TextUtils.isEmpty(getErrorStatus("SOH过低", bytes, 4))) {
                         sb.append("SohLow:");
-                        sb.append(getErrorStatus("SOH过低", bytes, 2));
+                        sb.append(getErrorStatus("SOH过低", bytes, 4));
                         sb.append("\n");
                     }
 

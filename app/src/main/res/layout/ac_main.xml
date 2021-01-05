@@ -222,6 +222,8 @@
                         android:id="@+id/sendTital"
                         android:layout_width="wrap_content"
                         android:layout_height="30dp"
+                        android:visibility="gone"
+
                         android:layout_gravity="center_horizontal"
                         android:layout_marginLeft="5dp"
                         android:text="Send Text"
@@ -230,6 +232,7 @@
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:visibility="gone"
                         android:orientation="horizontal">
 
                         <Switch
@@ -250,6 +253,7 @@
                 <EditText
                     android:id="@+id/sendData"
                     android:layout_width="match_parent"
+                    android:visibility="gone"
                     android:layout_height="130dp"
                     android:layout_margin="5dp"
                     android:text="7E 0A 01 01 00 6E E0 E0 49 71"
@@ -284,6 +288,7 @@
                 android:id="@+id/sendBtn"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
+                android:visibility="gone"
                 android:layout_alignLeft="@+id/countShow"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentBottom="true"
