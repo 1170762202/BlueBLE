@@ -688,7 +688,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         for (int i = 93; i <= 100; i++) {
             byte[] bytes = ParseSystemUtil.parseHexStr2Byte(strings[i]);
             switch (i) {
-                case 94: {
+                case 93: {
                     if (!TextUtils.isEmpty(getErrorStatus("软件", bytes, 6))) {
                         sb.append("software:");
                         sb.append(getErrorStatus("软件", bytes, 6));
@@ -715,7 +715,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 
                     break;
                 }
-                case 95: {
+                case 94: {
                     if (!TextUtils.isEmpty(getErrorStatus("外部FLASH", bytes, 6))) {
                         sb.append("ext_flash:");
                         sb.append(getErrorStatus("外部FLASH", bytes, 6));
@@ -741,7 +741,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
                     }
                     break;
                 }
-                case 96: {
+                case 95: {
                     if (!TextUtils.isEmpty(getErrorStatus("温度检测", bytes, 6))) {
                         sb.append("temper_det:");
                         sb.append(getErrorStatus("温度检测", bytes, 6));
@@ -766,7 +766,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
                     }
                     break;
                 }
-                case 97: {
+                case 96: {
                     if (!TextUtils.isEmpty(getErrorStatus("CAN通讯", bytes, 6))) {
                         sb.append("can_comm:");
                         sb.append(getErrorStatus("CAN通讯", bytes, 6));
@@ -793,7 +793,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 
                     break;
                 }
-                case 98: {
+                case 97: {
                     if (!TextUtils.isEmpty(getErrorStatus("短路", bytes, 6))) {
                         sb.append("short_cur:");
                         sb.append(getErrorStatus("短路", bytes, 6));
@@ -818,7 +818,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
                     }
 
                 }
-                case 101:
+                case 100:
                     if (!TextUtils.isEmpty(getErrorStatus("系统运行模式", bytes, 4))) {
                         sb.append("SysRunMode:");
                         sb.append(getErrorStatus("系统运行模式", bytes, 4));
