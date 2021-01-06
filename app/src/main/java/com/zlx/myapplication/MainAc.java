@@ -327,6 +327,23 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         sb1.append("系统时间: " + s);
         sb1.append("\n");
 
+
+        //运行模式
+        sb1.append("运行模式: " );
+        byte[] bytes = ParseSystemUtil.parseHexStr2Byte(split[100]);
+        if (bytes[4] == 0 && bytes[5] == 0 && bytes[6] == 0 && bytes[7] == 0) {
+            sb1.append("静置模式" );
+        }else if (bytes[4]==1 && bytes[5] == 0 && bytes[6] == 0 && bytes[7] == 0){
+            sb1.append("充电模式" );
+        }else if (bytes[4]==0 && bytes[5] == 1 && bytes[6] == 0 && bytes[7] == 0){
+            sb1.append("放电模式" );
+        }
+        if (!TextUtils.isEmpty(getErrorStatus("系统运行模式", bytes, 4))) {
+            sb.append("SysRunMode:");
+            sb.append(getErrorStatus("系统运行模式", bytes, 4));
+            sb.append("\n");
+        }
+
         double 电池节数 = calcOneByte(split[121], 1, 0, 1);
         sb1.append("电池节数: " + (int) 电池节数);
         sb1.append("\n");
@@ -816,15 +833,8 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
                         sb.append(getErrorStatus("MOS管温度检测", bytes, 0));
                         sb.append("\n");
                     }
-
-                }
-                case 100:
-                    if (!TextUtils.isEmpty(getErrorStatus("系统运行模式", bytes, 4))) {
-                        sb.append("SysRunMode:");
-                        sb.append(getErrorStatus("系统运行模式", bytes, 4));
-                        sb.append("\n");
-                    }
                     break;
+                }
             }
         }
 
