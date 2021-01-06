@@ -80,7 +80,6 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
     private countRecevieRateThread mCountRecevieRateThread;
     private ProgressDialog mProgressDialog;
     public final static int REQEEST_ENUM_PORTS = 10;
-    private RecyclerView recyclerView;
 
     private Handler mCountReceiveRateHandler = new Handler() {
 
@@ -263,11 +262,11 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 
         StringBuilder builder = new StringBuilder();
         StringBuilder checkB = new StringBuilder();
-        for (int i=0;i<list.size();i++){
-            if (i!=0&&i!=list.size()-1&&i!=list.size()-2){
+        for (int i = 0; i < list.size(); i++) {
+            if (i != 0 && i != list.size() - 1 && i != list.size() - 2) {
                 checkB.append(list.get(i));
             }
-            builder.append(list.get(i)+" ");
+            builder.append(list.get(i) + " ");
         }
 //        listAdapter.add("收到的数据：" + sb.toString());
         String[] split = builder.toString().split(" ");
@@ -1052,7 +1051,6 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 
         mReceiveDataTV = (TextView) findViewById(R.id.receiveData);
         tvData = (TextView) findViewById(R.id.tvData);
-        recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         mSendDataTV = (TextView) findViewById(R.id.sendData);
         mInternalTV = (EditText) findViewById(R.id.internal);
 
@@ -1124,15 +1122,15 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 			
 		});*/
 
-        mOpenOrCloseBtn.setText("Open");
+        mOpenOrCloseBtn.setText("打开(Open)");
     }
 
     private void updateUiObject() {
         // TODO Auto-generated method stub
         if (isPortOpen) {
-            mOpenOrCloseBtn.setText("Close");
+            mOpenOrCloseBtn.setText("关闭(Close)");
         } else {
-            mOpenOrCloseBtn.setText("Open");
+            mOpenOrCloseBtn.setText("打开(Open)");
         }
         mSendCountTV.setText(mTotalSendSize + "");
         mReceiveCountTV.setText(mTotalReceiveSize + "");
@@ -1249,6 +1247,12 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         // TODO Auto-generated method stub
         switch (v.getId()) {
             case R.id.enumAllPortsBtn:
+                util.closePort();
+                mOpenOrCloseBtn.setText("打开(Open)");
+                isPortOpen = false;
+                mSelectedPort = null;
+                mSelectedPortTV.setText(null);
+
                 // TODO Auto-generated method stub
                 Intent intent = new Intent();
                 intent.setClass(MainAc.this, EnumPortActivity.class);
@@ -1257,11 +1261,21 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
             case R.id.openOrClosePortsBtn:
                 if (isPortOpen) {
                     util.closePort();
+                    mOpenOrCloseBtn.setText("打开(Open)");
+                    Toast.makeText(this, "关闭成功", Toast.LENGTH_SHORT).show();
+                    mSelectedPortTV.setText(null);
+
+                    isPortOpen = false;
+                    mSelectedPort = null;
                 } else if (mSelectedPort != null) {
+                    // 等待窗口
                     // 等待窗口
                     getProgressDialog().show();
                     util.openPort(mSelectedPort);
                 } else {
+                    Toast.makeText(this, "请选择设备", Toast.LENGTH_SHORT).show();
+                    mSelectedPortTV.setText(null);
+
                     Log.i(TAG, "User didn't select a port...So the port won't be opened...");
                 }
 
@@ -1305,16 +1319,16 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
             case R.id.clearBtn:
                 mTotalSendSize = 0;
                 mTotalReceiveSize = 0;
-                updateUiObject();
+//                updateUiObject();
                 break;
             case R.id.receiveTextClearBtn:
                 mReceivedData = "";
-                updateUiObject();
+//                updateUiObject();
                 break;
             case R.id.sendTextClearBtn:
                 mSendData = "";
                 mSendDataTV.setText(mSendData);
-                updateUiObject();
+//                updateUiObject();
         }
     }
 
