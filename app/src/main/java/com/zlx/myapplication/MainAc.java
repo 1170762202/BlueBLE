@@ -260,19 +260,24 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         }
 
         Log.e("TAG", "sp=" + list.size());
-        if (!list.get(list.size() - 1).equals("0C".toLowerCase()) || !list.get(list.size() - 2).equals("EB".toLowerCase())) {
-            list.clear();
-            Log.e("TAG", "数据无效");
-            return;
-        }
 
         StringBuilder builder = new StringBuilder();
-        for (String s : list) {
-            builder.append(s + " ");
+        StringBuilder checkB = new StringBuilder();
+        for (int i=0;i<list.size();i++){
+            if (i!=0&&i!=list.size()-1&&i!=list.size()-2){
+                checkB.append(list.get(i));
+            }
+            builder.append(list.get(i)+" ");
         }
 //        listAdapter.add("收到的数据：" + sb.toString());
         String[] split = builder.toString().split(" ");
 //        boolean flag1 = (crc(rxValue)) >> 8 == rxValue[58] && (byte) crc(rxValue) == rxValue[59];
+        String s = ParseSystemUtil.GetCRC_XMODEM_Str(checkB.toString());
+        if (Integer.parseInt(s, 16) != Integer.parseInt(list.get(list.size() - 1) + list.get(list.size() - 2), 16)) {
+//            Toast.makeText(this, "CRC 校验失败", Toast.LENGTH_SHORT).show();
+            list.clear();
+            return;
+        }
         set(split);
         list.clear();
     }
@@ -329,20 +334,16 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
 
 
         //运行模式
-        sb1.append("运行模式: " );
+        sb1.append("运行模式: ");
         byte[] bytes = ParseSystemUtil.parseHexStr2Byte(split[100]);
-        if (bytes[4] == 0 && bytes[5] == 0 && bytes[6] == 0 && bytes[7] == 0) {
-            sb1.append("静置模式" );
-        }else if (bytes[4]==1 && bytes[5] == 0 && bytes[6] == 0 && bytes[7] == 0){
-            sb1.append("充电模式" );
-        }else if (bytes[4]==0 && bytes[5] == 1 && bytes[6] == 0 && bytes[7] == 0){
-            sb1.append("放电模式" );
+        if (bytes[7 - 4] == 0 && bytes[7 - 5] == 0 && bytes[7 - 6] == 0 && bytes[7 - 7] == 0) {
+            sb1.append("静置模式");
+        } else if (bytes[7 - 4] == 1 && bytes[7 - 5] == 0 && bytes[7 - 6] == 0 && bytes[7 - 7] == 0) {
+            sb1.append("充电模式");
+        } else if (bytes[7 - 4] == 0 && bytes[7 - 5] == 1 && bytes[7 - 6] == 0 && bytes[7 - 7] == 0) {
+            sb1.append("放电模式");
         }
-        if (!TextUtils.isEmpty(getErrorStatus("系统运行模式", bytes, 4))) {
-            sb.append("SysRunMode:");
-            sb.append(getErrorStatus("系统运行模式", bytes, 4));
-            sb.append("\n");
-        }
+        sb1.append("\n");
 
         double 电池节数 = calcOneByte(split[121], 1, 0, 1);
         sb1.append("电池节数: " + (int) 电池节数);
