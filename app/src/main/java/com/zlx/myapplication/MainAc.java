@@ -140,7 +140,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
             if (getProgressDialog().isShowing()) {
                 getProgressDialog().dismiss();
             }
-            Toast.makeText(MainAc.this, "Disconnected from Peripheral", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(MainAc.this, "Disconnected from Peripheral", Toast.LENGTH_SHORT).show();
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
