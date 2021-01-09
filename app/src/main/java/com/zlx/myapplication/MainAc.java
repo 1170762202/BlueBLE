@@ -502,7 +502,7 @@ public class MainAc extends AppCompatActivity implements View.OnClickListener, C
         sb.append("放电安时: " + 放电安时.stripTrailingZeros().toPlainString() + "mAh");
         sb.append("\n");
 
-        BigDecimal 充电总安时 = calc4Byte(split[109], split[11], split[111], split[112], 1, 0, 1);
+        BigDecimal 充电总安时 = calc4Byte(split[109], split[110], split[111], split[112], 1, 0, 1);
         sb.append("充电总安时: " + 充电总安时.stripTrailingZeros().toPlainString() + "mAh");
         sb.append("\n");
 
